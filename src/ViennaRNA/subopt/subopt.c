@@ -648,7 +648,9 @@ vrna_subopt_cb(vrna_fold_compound_t *fc,
         structure_energy = vrna_eval_structure(fc, structure);
 
       e = (int)((structure_energy - min_en) * 10. - correction); /* avoid rounding errors */
-      if (e > MAXDOS)
+      if (e < 0)
+        e = 0;
+      else if (e > MAXDOS)
         e = MAXDOS;
 
       density_of_states[e]++;
