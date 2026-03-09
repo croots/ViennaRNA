@@ -655,8 +655,16 @@ vrna_subopt_cb(vrna_fold_compound_t *fc,
        * lower than that re-evaluated min_en, yielding structure_energy < min_en
        * and thus e < 0.  Clamp to 0 so we don't write out-of-bounds.
        */
-      if (e < 0)
+      if (e < 0) {
+        fprintf(stderr,
+                "[subopt] WARNING: e=%d < 0 clamped to 0 "
+                "(structure_energy=%.4f kcal/mol, min_en=%.4f kcal/mol, "
+                "correction=%.1f, dangle_model=%d)\n"
+                "         structure: %s\n",
+                e, structure_energy, min_en, correction, dangle_model,
+                structure);
         e = 0;
+      }
       else if (e > MAXDOS)
         e = MAXDOS;
 
