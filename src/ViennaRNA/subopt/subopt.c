@@ -648,7 +648,24 @@ vrna_subopt_cb(vrna_fold_compound_t *fc,
         structure_energy = vrna_eval_structure(fc, structure);
 
       e = (int)((structure_energy - min_en) * 10. - correction); /* avoid rounding errors */
-      if (e > MAXDOS)
+      /*
+       * e can be negative when the MFE structure was found under a temporarily
+       * forced dangle model (dangles=2) but min_en was re-evaluated with the
+       * original dangle model (1 or 3).  A suboptimal structure may then score
+       * lower than that re-evaluated min_en, yielding structure_energy < min_en
+       * and thus e < 0.  Clamp to 0 so we don't write out-of-bounds.
+       */
+      if (e < 0) {
+        fprintf(stderr,
+                "[subopt] WARNING: e=%d < 0 clamped to 0 "
+                "(structure_energy=%.4f kcal/mol, min_en=%.4f kcal/mol, "
+                "correction=%.1f, dangle_model=%d)\n"
+                "         structure: %s\n",
+                e, structure_energy, min_en, correction, dangle_model,
+                structure);
+        e = 0;
+      }
+      else if (e > MAXDOS)
         e = MAXDOS;
 
       density_of_states[e]++;
